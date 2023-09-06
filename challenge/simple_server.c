@@ -7,17 +7,24 @@
 
 #include "max_heap.h"       // Custom max heap functions
 #include "reverse_hash.h"   // Custom reverse hash function
+#include "tcpServerSetup.h" // Custom TCP server setup functions
 
 #define REQ_SIZE 49
 #define RESP_SIZE 8
 
-
-// Global flag for signal handling
-volatile sig_atomic_t keep_running = 1;
+// Server and client socket descriptors
+int server_fd, new_socket;
+struct sockaddr_in address;  // Server address
+int addrlen = sizeof(address);
+struct request_packet req;   // Request packet
+struct response_packet resp; // Response packet
 
 // Signal handler for Ctrl+C
 void handle_sigint(int sig) {
-    keep_running = 0;
+    close(server_fd);
+    printf("Server closed.\n");
+    printf("Exiting gracefully...\n");
+    exit(0);
 }
 
 // Response packet structure
@@ -28,48 +35,22 @@ struct response_packet {
 int main(int argc, char *argv[]) {
     // Check command line arguments
     if(argc != 2) {
-        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
-        exit(EXIT_FAILURE);
+        fprintf("Usage: %s <port>\n", argv[0]);
+        exit(1);
     }
-
-    // Parse port number
-    int port = atoi(argv[1]);
 
     // Register signal handler for Ctrl+C
     signal(SIGINT, handle_sigint); 
 
-    // Server and client socket descriptors
-    int server_fd, new_socket;
-    struct sockaddr_in address;  // Server address
-    int addrlen = sizeof(address);
-    struct request_packet req;   // Request packet
-    struct response_packet resp; // Response packet
 
-    // Create server socket
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("socket failed");
-        exit(EXIT_FAILURE);
-    }
+    // Create server socket and start listening
+    server_fd = createServerTcpSocketAndListen(atoi(argv[1]));
 
-    // Configure server address
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(port);
-
-    // Bind server socket to the address
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
-        perror("bind failed");
-        exit(EXIT_FAILURE);
-    }
-
-    // Start listening for client connections
-    if (listen(server_fd, 50) < 0) {
-        perror("listen");
-        exit(EXIT_FAILURE);
-    }
+    // Initialize hash table
+    
 
     // Main loop
-    while (keep_running) {
+    while (1) {
         // Accept a new client connection
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
             perror("accept");
@@ -82,6 +63,10 @@ int main(int argc, char *argv[]) {
             perror("read");
             exit(EXIT_FAILURE);
         }
+
+
+
+
 
         // Convert to host byte order
         req.start = be64toh(req.start);
@@ -104,18 +89,9 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
 
-        // Close the client socket
-        close(new_socket);
-
-        // Check if a signal to stop was received
-        if (!keep_running) {
-            printf("Received Ctrl+C. Shutting down.\n");
-            break;
-        }
     }
 
-    // Close the server socket
-    close(server_fd);
+  
 
     return 0;
 }

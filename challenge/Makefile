@@ -8,7 +8,7 @@ CFLAGS = -Wall -g
 LDFLAGS = -lpthread -lcrypto
 
 # Source files
-SOURCES = simple_server.c max_heap.c reverse_hash.c
+SOURCES = simple_server.c max_heap.c reverse_hash.c tcpServerSetup.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)

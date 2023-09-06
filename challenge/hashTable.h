@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define HASH_TABLE_SIZE 100
+#define HASH_TABLE_SIZE 100 // This value should be assigned according to the available memory
 #define KEY_SIZE 32
 
 typedef struct Node {

@@ -28,13 +28,14 @@ void heapify(int index) {
     }
 }
 
-void insert(struct request_packet req) {
+void insert(struct request_packet req, int client_socket) {
     if (heapSize >= MAX_HEAP_SIZE) {
         return; // Heap is full
     }
 
     struct heap_node newNode;
     newNode.req = req;
+    newNode.client_socket = client_socket;
     maxHeap[heapSize] = newNode;
     heapSize++;
 

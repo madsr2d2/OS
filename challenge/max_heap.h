@@ -15,11 +15,12 @@ struct request_packet {
 
 struct heap_node {
     struct request_packet req;
+    int client_socket;
 };
 
 void swap(struct heap_node *a, struct heap_node *b);
 void heapify(int index);
-void insert(struct request_packet req);
+void insert(struct request_packet req, int client_socket);
 struct heap_node extractMax();
 void initialize_heap();
 

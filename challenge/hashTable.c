@@ -1,6 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include "hashTable.h"
 
 unsigned int hash(const uint8_t *key) {
@@ -65,11 +63,15 @@ int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
 }
 
 void freeHashTable(HashTable *hashTable) {
+    printf("Freeing hash table...\n");
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        printf("Freeing linked list at index %d...\n", i);
         Node *current = hashTable->table[i];
         while (current) {
+            printf("Freeing node with key: %s\n", current->key);
             Node *temp = current;
             current = current->next;
+            printf("Freeing node with key: %s\n", temp->key);
             free(temp);
         }
     }

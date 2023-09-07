@@ -2,6 +2,9 @@
 #define HASHTABLE_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define HASH_TABLE_SIZE 100 // This value should be assigned according to the available memory
 #define KEY_SIZE 32

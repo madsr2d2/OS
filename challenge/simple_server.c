@@ -1,16 +1,8 @@
-#include <stdio.h>          // Necessary for fprintf, printf, etc.
-#include <stdlib.h>         // Necessary for exit and atoi.
-#include <string.h>         // Necessary for memcmp.
-#include <unistd.h>         // Necessary for read, write, and close.
-#include <arpa/inet.h>      // Necessary for socket operations like htons, accept, etc.
-#include <signal.h>         // Necessary for signal handling.
 
-#include "max_heap.h"       // Custom max heap functions
-#include "reverse_hash.h"   // Custom reverse hash function
-#include "tcpServerSetup.h" // Custom TCP server setup functions
 
-#define REQ_SIZE 49
-#define RESP_SIZE 8
+#include "simple_server.h"
+
+
 
 // Server and client socket descriptors
 int server_fd, new_socket;
@@ -19,10 +11,15 @@ int addrlen = sizeof(address);
 struct request_packet req;   // Request packet
 struct response_packet resp; // Response packet
 
+HashTable *hashTable;        // Hash table
+
 // Signal handler for Ctrl+C
 void handle_sigint(int sig) {
+    printf("Freeing resources...\n");
     close(server_fd);
     printf("Server closed.\n");
+    freeHashTable(hashTable);
+    printf("Hash table freed.\n");
     printf("Exiting gracefully...\n");
     exit(0);
 }
@@ -35,7 +32,7 @@ struct response_packet {
 int main(int argc, char *argv[]) {
     // Check command line arguments
     if(argc != 2) {
-        fprintf("Usage: %s <port>\n", argv[0]);
+        printf("Usage: %s <port>\n", argv[0]);
         exit(1);
     }
 
@@ -43,41 +40,62 @@ int main(int argc, char *argv[]) {
     signal(SIGINT, handle_sigint); 
 
 
+    // Initialize hash table
+    hashTable = createHashTable();
+    printf("Hash table initialized.\n");
+
     // Create server socket and start listening
     server_fd = createServerTcpSocketAndListen(atoi(argv[1]));
+    printf("Server is listening on port %s...\n", argv[1]);
 
-    // Initialize hash table
+
+
     
 
     // Main loop
     while (1) {
         // Accept a new client connection
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0) {
-            perror("accept");
-            exit(EXIT_FAILURE);
+            perror("Accept failed");
+            handle_sigint(1);
+
         }
 
         // Read the request from client
         int valread = read(new_socket, &req, REQ_SIZE);
         if (valread != REQ_SIZE) {
-            perror("read");
-            exit(EXIT_FAILURE);
+            perror("Read failed");
+            handle_sigint(1);
         }
 
+        // check if the request is already in the hash table and send the response back to the client
+        uint64_t value;
+        if (search(hashTable, req.hash, &value) == 0) {
+            
+            // Convert to network byte order
+            resp.answer = htobe64(value);
 
+            // Send the response back to the client
+            int valwrite = write(new_socket, &resp, sizeof(resp));
+            if (valwrite != sizeof(resp)) {
+                perror("Write failed");
+                handle_sigint(1);
+            }
 
-
+            // Close the client socket
+            close(new_socket);
+            continue;
+        }
 
         // Convert to host byte order
         req.start = be64toh(req.start);
         req.end = be64toh(req.end);
 
-        // Insert the request into max heap
-        insert(req, new_socket);
+  
+        uint64_t answer = reverse_hash(req.hash, req.start, req.end);
 
-        // Extract the highest priority request and process it
-        struct heap_node highestPriorityNode = extractMax();
-        uint64_t answer = reverse_hash(highestPriorityNode.req.hash, highestPriorityNode.req.start, highestPriorityNode.req.end);
+        // Insert the request and the answer into the hash table
+        insert(hashTable, req.hash, answer);
 
         // Convert to network byte order
         resp.answer = htobe64(answer);
@@ -85,10 +103,12 @@ int main(int argc, char *argv[]) {
         // Send the response back to the client
         int valwrite = write(new_socket, &resp, sizeof(resp));
         if (valwrite != sizeof(resp)) {
-            perror("write");
-            exit(EXIT_FAILURE);
+            perror("Write failed");
+            exit(1);
         }
 
+        // Close the client socket
+        close(new_socket);
     }
 
   

@@ -29,7 +29,6 @@ int createServerTcpSocketAndListen(int port) {
     }
 
     return server_fd;
-
 }
 
 // function that searches the hash table for the key and sends the value to the client if the key is found. The function returns 0 if the key is found and 1 if the key is not found.
@@ -92,7 +91,7 @@ int acceptClientConnectionAndReadRequest(int *server_fd, int *new_socket, struct
     }
 
     // Read the request from client
-    int valread = read(*new_socket, &req, REQ_SIZE);
+    int valread = read(*new_socket, req, REQ_SIZE);
     if (valread != REQ_SIZE) {
         perror("Read failed");
         return 1;

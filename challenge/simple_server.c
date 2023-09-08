@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Accept a new client connection and read the request
         if(acceptClientConnectionAndReadRequest(&server_fd, &new_socket, &address, &addrlen, &req) != 0) {
-            continue;
+            //continue;
         }
 
         if (verbose) {

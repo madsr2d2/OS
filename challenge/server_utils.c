@@ -103,7 +103,7 @@ int acceptClientConnectionAndReadRequest(int *server_fd, int *new_socket, struct
     return 0;
 }
 
-// Function implementation for reverseHash
+// Function implementation for reverse Hash
 int reverseHash(uint8_t target_hash[32], uint64_t *start, uint64_t *end, uint64_t *answer) {
     unsigned char sha256_result[SHA256_DIGEST_LENGTH];
     uint64_t i;
@@ -115,4 +115,16 @@ int reverseHash(uint8_t target_hash[32], uint64_t *start, uint64_t *end, uint64_
         }
     }
     return 1; // Answer not found
+}
+
+// Signal handler for Ctrl+C
+void handle_sigint(int sig) {
+    printf("Freeing resources...\n");
+    close(server_fd);
+    close(new_socket);
+    printf("Server closed.\n");
+    freeHashTable(hashTable);
+    printf("Hash table freed.\n");
+    printf("Exiting gracefully...\n");
+    exit(0);
 }

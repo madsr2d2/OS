@@ -1,18 +1,12 @@
 
 #include "hashTable.h"
 
-//unsigned int hash(const uint8_t *key) {
-//    unsigned int hash = 0;
-//    for (int i = 0; i < KEY_SIZE; ++i) {
-//        hash = (hash << 7) + key[i];
-//    }
-//    return hash & 1023;
-//}
-
+// Hash function
 unsigned int hash(const uint8_t *key) {
     return XXH64(key, KEY_SIZE, 0) % HASH_TABLE_SIZE;
 }
 
+// Print key
 void printKey(const uint8_t *key, size_t size) {
     for(size_t i = 0; i < size; ++i) {
         printf("%02x", key[i]);

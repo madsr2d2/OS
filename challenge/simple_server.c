@@ -12,17 +12,6 @@ response_packet resp;           // Response packet
 HashTable *hashTable;           // Hash table
 struct timespec start, end;     // time variables 
 
-// Signal handler for Ctrl+C
-void handle_sigint(int sig) {
-    printf("Freeing resources...\n");
-    close(server_fd);
-    printf("Server closed.\n");
-    freeHashTable(hashTable);
-    printf("Hash table freed.\n");
-    printf("Exiting gracefully...\n");
-    exit(0);
-}
-
 int main(int argc, char *argv[]) {
     // Check command line arguments
     if(argc != 3) {
@@ -92,6 +81,7 @@ int main(int argc, char *argv[]) {
             if (searchHashTableAndSendValueToClient(&new_socket, &req, &resp, hashTable) == 0) {
                 continue;
             }
+            
             reverseHashUpdateHashTableAndSendValueToClient(&new_socket, &req, &resp, hashTable);
         }
     }

@@ -5,8 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "xxhash.h"
 
-#define HASH_TABLE_SIZE 100 // This value should be assigned according to the available memory
+#define HASH_TABLE_SIZE 4096 // This value should be assigned according to the available memory
 #define KEY_SIZE 32
 
 typedef struct Node {

@@ -9,23 +9,11 @@
 #include <arpa/inet.h>      // Necessary for socket operations like htons, accept, etc.
 #include <signal.h>         // Necessary for signal handling.
 #include "reverse_hash.h"   // Custom reverse hash function
-#include "tcpServerSetup.h" // Custom TCP server setup functions
+#include "server_utils.h" // Custom TCP server setup functions
 #include "hashTable.h"      // Custom hash table functions
 
 #define REQ_SIZE 49
 #define RESP_SIZE 8
-
-#pragma pack(push, 1)
-struct request_packet {
-    uint8_t hash[32];
-    uint64_t start;
-    uint64_t end;
-    uint8_t priority;
-};
-#pragma pack(pop)
-
-
-
 
 
 #endif

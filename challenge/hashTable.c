@@ -1,12 +1,23 @@
 
 #include "hashTable.h"
 
+//unsigned int hash(const uint8_t *key) {
+//    unsigned int hash = 0;
+//    for (int i = 0; i < KEY_SIZE; ++i) {
+//        hash = (hash << 7) + key[i];
+//    }
+//    return hash & 1023;
+//}
+
 unsigned int hash(const uint8_t *key) {
-    unsigned int hash = 0;
-    while (*key) {
-        hash = (hash << 5) + *key++;
+    return XXH64(key, KEY_SIZE, 0) % HASH_TABLE_SIZE;
+}
+
+void printKey(const uint8_t *key, size_t size) {
+    for(size_t i = 0; i < size; ++i) {
+        printf("%02x", key[i]);
     }
-    return hash % HASH_TABLE_SIZE;
+    printf("\n");
 }
 
 HashTable* createHashTable() {
@@ -27,8 +38,7 @@ Node* createNode(const uint8_t *key, uint64_t value) {
         printf("Memory error\n");
         return NULL;
     }
-    strncpy((char*)newNode->key, (char*)key, KEY_SIZE - 1);
-    newNode->key[KEY_SIZE - 1] = '\0';  // Ensuring null termination
+    memcpy(newNode->key, key, KEY_SIZE);
     newNode->value = value;
     newNode->next = NULL;
     return newNode;
@@ -52,26 +62,21 @@ int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
     unsigned int index = hash(key);
     Node *current = hashTable->table[index];
     while (current) {
-        if (strncmp((char*)current->key, (char*)key, KEY_SIZE) == 0) {
+        if (memcmp(current->key, key, KEY_SIZE) == 0) {
             *value = current->value;
             return 0;  // 0 indicates success
         }
         current = current->next;
     }
-    printf("Key not found\n");
     return -1;  // -1 indicates key not found error
 }
 
 void freeHashTable(HashTable *hashTable) {
-    printf("Freeing hash table...\n");
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
-        printf("Freeing linked list at index %d...\n", i);
         Node *current = hashTable->table[i];
         while (current) {
-            printf("Freeing node with key: %s\n", current->key);
             Node *temp = current;
             current = current->next;
-            printf("Freeing node with key: %s\n", temp->key);
             free(temp);
         }
     }

@@ -1,13 +1,9 @@
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
-#include <stdint.h>
-#include <stdio.h>          // Necessary for fprintf, printf, etc.
-#include <stdlib.h>         // Necessary for exit and atoi.
-#include <string.h>         // Necessary for memcmp.
+#include <stdint.h>         // Necessary for uint8_t, uint16_t, etc.
 #include <unistd.h>         // Necessary for read, write, and close.
 #include <arpa/inet.h>      // Necessary for socket operations like htons, accept, etc.
-#include <signal.h>         // Necessary for signal handling.
 #include "reverse_hash.h"   // Custom reverse hash function
 #include "hashTable.h"      // Custom hash table functions
 

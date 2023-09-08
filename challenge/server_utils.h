@@ -4,7 +4,8 @@
 #include <stdint.h>         // Necessary for uint8_t, uint16_t, etc.
 #include <unistd.h>         // Necessary for read, write, and close.
 #include <arpa/inet.h>      // Necessary for socket operations like htons, accept, etc.
-#include "reverse_hash.h"   // Custom reverse hash function
+#include <openssl/sha.h>    // Necessary for SHA256
+#include <string.h>         // Necessary for memcpy
 #include "hashTable.h"      // Custom hash table functions
 
 #define QUEUE_SIZE 50
@@ -31,5 +32,5 @@ int createServerTcpSocketAndListen(int port);
 int searchHashTableAndSendValueToClient(int *new_socket, request_packet *req, response_packet *resp, HashTable *hashTable);
 int reverseHashUpdateHashTableAndSendValueToClient(int *new_socket, request_packet *req, response_packet *resp, HashTable *hashTable);
 int acceptClientConnectionAndReadRequest(int *server_fd, int *new_socket, struct sockaddr_in *address, int *addrlen, request_packet *req);
-
+int reverseHash(uint8_t target_hash[32], uint64_t *start, uint64_t *end, uint64_t *answer);
 #endif

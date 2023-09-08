@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall -g
 
 # Linker flags
-LDFLAGS = -lpthread -lcrypto
+LDFLAGS = -lcrypto
 
 # Source files
-SOURCES = simple_server.c hashTable.c reverse_hash.c server_utils.c xxhash.c 
+SOURCES = simple_server.c hashTable.c server_utils.c xxhash.c 
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)

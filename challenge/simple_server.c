@@ -4,14 +4,13 @@
 #include <stdio.h>          // Necessary for fprintf, printf, etc.
 #include "server_utils.h"   // Custom server functions
 
-// Server and client socket descriptors
-int server_fd, new_socket;
-struct sockaddr_in address;  // Server address
-int addrlen = sizeof(address);
-request_packet req;   // Request packet
-response_packet resp; // Response packet
-HashTable *hashTable;        // Hash table
-struct timespec start, end; // time variables
+int server_fd, new_socket;      // Server socket and new client socket
+struct sockaddr_in address;     // Server address
+int addrlen = sizeof(address);  // Server address length
+request_packet req;             // Request packet
+response_packet resp;           // Response packet
+HashTable *hashTable;           // Hash table
+struct timespec start, end;     // time variables 
 
 // Signal handler for Ctrl+C
 void handle_sigint(int sig) {
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
     while (1) {
         // Accept a new client connection and read the request
         if(acceptClientConnectionAndReadRequest(&server_fd, &new_socket, &address, &addrlen, &req) != 0) {
-            //continue;
+            continue;
         }
 
         if (verbose) {

@@ -58,12 +58,16 @@ int searchHashTableAndSendValueToClient(int *new_socket, request_packet *req, re
 
 // function that reverses the hash, updates the hash table, and sends the value to the client. 
 int reverseHashUpdateHashTableAndSendValueToClient(int *new_socket, request_packet *req, response_packet *resp, HashTable *hashTable) {
+    uint64_t answer = 0; // Answer to the reverse hash problem
+    
     // Convert to host byte order
     req->start = be64toh(req->start);
     req->end = be64toh(req->end);
 
-    // Reverse the hash
-    uint64_t answer = reverse_hash(req->hash, req->start, req->end);
+    // new reverse hash function
+    if (reverseHash(req->hash, &req->start, &req->end, &answer)!=0) {
+        perror("Reverse hash not found. Sending 0 to client.");
+    }
 
     // Insert the request and the answer into the hash table
     insert(hashTable, req->hash, answer);
@@ -99,3 +103,16 @@ int acceptClientConnectionAndReadRequest(int *server_fd, int *new_socket, struct
     return 0;
 }
 
+// Function implementation for reverseHash
+int reverseHash(uint8_t target_hash[32], uint64_t *start, uint64_t *end, uint64_t *answer) {
+    unsigned char sha256_result[SHA256_DIGEST_LENGTH];
+    uint64_t i;
+    for (i = *start; i <= *end; i++) {
+        SHA256((unsigned char *)&i, sizeof(uint64_t), sha256_result); // sha256_result is in big-endian format so we don't need to reverse it.
+        if (memcmp(sha256_result, target_hash, 32) == 0) {
+            *answer = i;
+            return 0; // Answer Found
+        }
+    }
+    return 1; // Answer not found
+}

@@ -1,6 +1,8 @@
 
 #include "hashTable.h"
 
+
+
 // Hash function
 unsigned int hash(const uint8_t *key) {
     return XXH64(key, KEY_SIZE, 0) % HASH_TABLE_SIZE;

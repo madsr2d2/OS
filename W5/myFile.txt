@@ -1,0 +1,2 @@
+some text in my file
+and some txt on the next line

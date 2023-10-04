@@ -8,7 +8,7 @@ CFLAGS = -Wall -g
 LDFLAGS = -lcrypto
 
 # Source files
-SOURCES = simple_server.c hashTable.c server_utils.c xxhash.c 
+SOURCES = simple_server.c hashTable.c server_utils.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)

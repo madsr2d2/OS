@@ -5,7 +5,7 @@
 #include <stdio.h>  // Necessary for fprintf, printf, etc.
 #include <stdlib.h> // Necessary for exit
 #include <string.h> // Necessary for memcpy
-#include "xxhash.h" // Necessary for xxHash
+//#include "xxhash.h" // Necessary for xxHash
 
 #define HASH_TABLE_SIZE 4096 // This value should be assigned according to the available memory
 #define KEY_SIZE 32         // Size of the key in bytes

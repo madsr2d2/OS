@@ -30,7 +30,7 @@ typedef struct response_packet{
     uint64_t answer;
 } response_packet;
 
-int createServerTcpSocketAndListen(int port);    
+int createServerTcpSocketAndListen(int port);
 int searchHashTableAndSendValueToClient(int *new_socket, request_packet *req, response_packet *resp, HashTable *hashTable);
 int reverseHashUpdateHashTableAndSendValueToClient(int *new_socket, request_packet *req, response_packet *resp, HashTable *hashTable);
 int acceptClientConnectionAndReadRequest(int *server_fd, int *new_socket, struct sockaddr_in *address, int *addrlen, request_packet *req);

@@ -1,12 +1,20 @@
 
 #include "hashTable.h"
 
-
-
-// Hash function
+// Our own simple hash function
 unsigned int hash(const uint8_t *key) {
-    return XXH64(key, KEY_SIZE, 0) % HASH_TABLE_SIZE;
+    unsigned int hash = 0;
+    for (int i = 0; i < KEY_SIZE; ++i) {
+        hash += key[i];  // Simply adds up the values of each byte in the key
+    }
+    return hash % HASH_TABLE_SIZE;  // Uses modulo to limit the hash values to the range of 0 to HASH_TABLE_SIZE - 1
 }
+
+// Hash function using xxHash
+//unsigned int hash(const uint8_t *key) {
+//    return XXH64(key, KEY_SIZE, 0) % HASH_TABLE_SIZE;
+//}
+
 
 // Print key
 void printKey(const uint8_t *key, size_t size) {
@@ -16,6 +24,7 @@ void printKey(const uint8_t *key, size_t size) {
     printf("\n");
 }
 
+// Create a new hash table
 HashTable* createHashTable() {
     HashTable *newTable = (HashTable*)malloc(sizeof(HashTable));
     if (!newTable) {
@@ -28,6 +37,7 @@ HashTable* createHashTable() {
     return newTable;
 }
 
+// Create a new node
 Node* createNode(const uint8_t *key, uint64_t value) {
     Node *newNode = (Node*)malloc(sizeof(Node));
     if (!newNode) {
@@ -40,6 +50,7 @@ Node* createNode(const uint8_t *key, uint64_t value) {
     return newNode;
 }
 
+// Insert a new node into the hash table
 void insert(HashTable *hashTable, const uint8_t *key, uint64_t value) {
     unsigned int index = hash(key);
     Node *newNode = createNode(key, value);
@@ -54,6 +65,7 @@ void insert(HashTable *hashTable, const uint8_t *key, uint64_t value) {
     }
 }
 
+// Search for a key in the hash table
 int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
     unsigned int index = hash(key);
     Node *current = hashTable->table[index];
@@ -67,6 +79,7 @@ int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
     return -1;  // -1 indicates key not found error
 }
 
+// Free the hash table
 void freeHashTable(HashTable *hashTable) {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node *current = hashTable->table[i];

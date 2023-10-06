@@ -1,4 +1,4 @@
-# Simple Server - OS Challenge
+# OS Challenge - Milestone 1
 
 In this project we build a simple server that can accept reverse hashing requests from clients, process the requests and send back the response. The server maintains a hash table data structure to store processed requests. The server is implemented in C and uses sockets for communication with the clients. This folder contains the source code for building the server.
 
@@ -75,4 +75,4 @@ $ ./simple_server <port> <verbose print>
 
 ### hashTable.c
 
-- Implementation function prototypes contained in `hashTable.h`.
+- Implementation of function prototypes contained in `hashTable.h`.

@@ -19,7 +19,7 @@ EXECUTABLE = simple_server
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) -o $@
+	$(CC) $(OBJECTS) $(LDFLAGS) -o server
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@

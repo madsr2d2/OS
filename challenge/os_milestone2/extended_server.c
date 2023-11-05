@@ -6,9 +6,9 @@ int server_fd;
 int main(int argc, char *argv[]) {
     // Check command line argument
     if(argc != 2) {
-        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
-        fprintf(stderr, "  <port>: The port number to use (e.g., 8080)\n");
-        exit(1);
+        printf("Usage: %s <port>\n", argv[0]);
+        printf("<port>: The port number to use (e.g., 8080)\n");
+        exit(EXIT_FAILURE);
     }
 
     int port = atoi(argv[1]);                       // Port number to use
@@ -16,7 +16,12 @@ int main(int argc, char *argv[]) {
     initQueue(&queue);                              // Initialize queue
     pthread_t thread1, thread2;                     // Thread handles
     acceptConnectionsArgs args = {&queue, port};    // Arguments for the acceptConnections thread
-    signal(SIGINT, signal_handler);                 // Register signal handler for SIGINT
+
+    // Register signal handler for SIGINT
+    if (signal(SIGINT, signal_handler) == SIG_ERR) {
+        perror("Error setting up signal handler.");
+        exit(EXIT_FAILURE);
+    }
 
     // Create thread for accepting connections
     if (pthread_create(&thread1, NULL, threadAcceptConnectionsHandler, &args)) {

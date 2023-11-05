@@ -6,7 +6,7 @@ int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
     // Create server socket
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket failed.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Configure server address
@@ -17,13 +17,13 @@ int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
     // Bind server socket to the address
     if (bind(server_fd, (struct sockaddr *)address, sizeof(*address)) < 0) {
         perror("Bind failed.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     // Start listening
     if (listen(server_fd, QUEUE_SIZE) < 0) {
         perror("Listen failed");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     printf("Server socket listening on port %d.\n", port);
@@ -65,7 +65,7 @@ int reverseHashAndSendValueToClient(int *client_fd, request_packet *req, respons
     // Send the response back to the client
     if (send(*client_fd, resp, RESP_SIZE,0) != RESP_SIZE) {
         perror("Send to client failed.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     
     // Close the client socket
@@ -74,17 +74,15 @@ int reverseHashAndSendValueToClient(int *client_fd, request_packet *req, respons
 }
 
 // thread handler for accepting connections and adding them to the queue
-void* threadAcceptConnectionsHandler(void* arg) {
+void* threadAcceptConnectionsHandler(void* args) {
     
-    acceptConnectionsArgs *args = (acceptConnectionsArgs*)arg;
-
     struct sockaddr_in address;
 
-    int server_fd = createServerTcpSocketAndListen(args->port, &address); // Create server socket and start listening
+    int server_fd = createServerTcpSocketAndListen(((acceptConnectionsArgs*)args)->port, &address); // Create server socket and start listening
 
     while (!terminate_flag) {
         // Accept a new connection and add it to the queue
-        enqueue(args->queue, accept(server_fd, (struct sockaddr*)&address, &(socklen_t){sizeof(address)}));
+        enqueue(((acceptConnectionsArgs*)args)->queue, accept(server_fd, (struct sockaddr*)&address, &(socklen_t){sizeof(address)}));
     }
     
     printf("Thread threadAcceptConnectionsHandler is shutting down gracefully...\n");
@@ -118,9 +116,10 @@ void* threadProcessRequestsHandler(void* arg) {
     while (!terminate_flag) {
         int client_fd = dequeue((FIFOQueue *)arg);  // Pass the queue's address to the dequeue function
         
-        if (client_fd == -1) {
+        if (client_fd == -1) { // Continue if queue is empty
             continue;
         }
+        
 
         if (readRequestFromClient(client_fd, &req) != 0) {
             perror("Error reading request from client");

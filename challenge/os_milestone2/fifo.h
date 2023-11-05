@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdio.h>
 
-#define FIFO_SIZE 50 // FIFO queue size
+#define FIFO_SIZE 10000 // FIFO queue size
 
 // Type definitions
 typedef struct {

@@ -96,15 +96,16 @@ int readRequestFromClient(int client_fd, request_packet *req) {
     int bytesRead = 0;
     while (bytesRead < REQ_SIZE && !terminate_flag) {
         int n = recv(client_fd, ((char*)req) + bytesRead, REQ_SIZE - bytesRead,0);
-        
-        if (n == -1) return 1; // Error in reading
-        
-        if (n == 0) return 2; // Client closed connection before sending REQ_SIZE bytes of data
-        
+        if (n == -1) {
+            perror("Error in reading");
+            return 1;
+        }
+        if (n == 0) {
+            return 0; // Socket closed
+        }
         bytesRead += n;
     }
-
-    return 0; // Success
+    return 0;
 }
 
 // thread handler for processing requests

@@ -17,7 +17,7 @@
 #include <netinet/in.h>     // Necessary for sockaddr_in, htons, etc.
 #include "fifo.h"           // Include the fifo header
 
-#define QUEUE_SIZE 1000      // Number of pending connections in the connection queue
+#define QUEUE_SIZE 1000       // Number of pending connections in the connection queue
 #define REQ_SIZE 49         // Size of the request packet
 #define RESP_SIZE 8         // Size of the response packet
 

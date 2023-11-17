@@ -14,7 +14,7 @@ SOURCES = single_thread_server.c fifo.c extended_server_utils.c
 OBJECTS = $(SOURCES:.c=.o)
 
 # Executable output name
-EXECUTABLE = single_thread_server_server
+EXECUTABLE = single_thread_server
 
 all: $(SOURCES) $(EXECUTABLE)
 

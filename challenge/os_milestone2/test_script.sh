@@ -11,7 +11,20 @@ run_client() {
     local port=$1
     local arg_value=$2
     # Construct the client arguments string.
-    CLIENT_ARGS="localhost $port 0 100 0 1000 0 1000 0"
+    
+    # This is the configuration of the final run.
+    SERVER=localhost
+    SEED=5041
+    TOTAL=100
+    START=0
+    DIFFICULTY=300
+    REP_PROB_PERCENT=20
+    DELAY_US=600000
+    PRIO_LAMBDA=1.5
+    
+    # Default client arguments.
+    CLIENT_ARGS="localhost $port $SEED $TOTAL $START $DIFFICULTY $REP_PROB_PERCENT $DELAY_US $PRIO_LAMBDA"
+
     # Update the client argument based on the given value.
     CLIENT_ARGS=$(echo "$CLIENT_ARGS" | awk -v num="$ARG_NUMBER" -v value="$arg_value" '{$num=value; print}')
     # Execute the client program with the constructed arguments.
@@ -60,7 +73,12 @@ SERVER_PORT2=${7:-} # Assign the 7th argument to SERVER_PORT2 if provided, other
 
 
 # Calculate the step increment based on the range and number of steps.
-STEP=$(( ($ARG_STOP - $ARG_START) / ($STEPS - 1) ))
+if [ $STEPS -eq 0 ]; then
+    STEP=0
+    STEPS=1
+else
+STEP=$(( ($ARG_STOP - $ARG_START) / ($STEPS-1) ))
+fi
 
 
 # Print header

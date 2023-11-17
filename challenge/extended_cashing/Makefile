@@ -8,7 +8,7 @@ CFLAGS = -Wall -g
 LDFLAGS = -lcrypto -pthread 
 
 # Source files
-SOURCES = extended_server.c fifo.c extended_server_utils.c
+SOURCES = extended_server.c fifo.c extended_server_utils.c hashTable.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)

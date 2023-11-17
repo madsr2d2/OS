@@ -1,5 +1,6 @@
 #include "extended_server_utils.h"
 
+
 // function that creates a TCP socket and starts listening. The function returns a file descriptor for the TCP socket
 int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
     
@@ -96,45 +97,125 @@ int readRequestFromClient(int client_fd, request_packet *req) {
     int bytesRead = 0;
     while (bytesRead < REQ_SIZE && !terminate_flag) {
         int n = recv(client_fd, ((char*)req) + bytesRead, REQ_SIZE - bytesRead,0);
+        
         if (n == -1) {
             perror("Error in reading");
             return 1;
         }
-        if (n == 0) {
-            return 0; // Socket closed
-        }
+
+        if (n == 0) return 0; // Socket closed
+        
         bytesRead += n;
     }
+
     return 0;
 }
 
 // thread handler for processing requests
-void* threadProcessRequestsHandler(void* arg) {
+void* threadProcessRequests_cashing_Handler(void* arg) {
     request_packet req;             // Request packet
     response_packet resp;           // Response packet
+    FIFOQueue *queue = ((processRequestsArgs *)arg)->queue;      // FIFO queue
+    HashTable *hashTable = ((processRequestsArgs *)arg)->hashTable; // Hash table
 
     while (!terminate_flag) {
-        int client_fd = dequeue((FIFOQueue *)arg);  // Pass the queue's address to the dequeue function
-        
+        int client_fd = dequeue(queue);  // Pass the queue's address to the dequeue function
+
         if (client_fd == -1) { // Continue if queue is empty
             continue;
         }
         
-
         if (readRequestFromClient(client_fd, &req) != 0) {
             perror("Error reading request from client");
             close(client_fd);  // Closing the socket on error is a good idea to free up resources
             continue;
         }
 
-        if (reverseHashAndSendValueToClient(&client_fd, &req, &resp) != 0) {
+        // search for the key in hash table int search(HashTable *hashTable, const uint8_t *key, uint64_t *value);
+        if (!search(hashTable, req.hash,&(resp.answer))) {
+            // Convert to network byte order
+            resp.answer = htobe64(resp.answer);
+
+            // Send the response back to the client
+            if (send(client_fd, &resp, RESP_SIZE,0) != RESP_SIZE) {
+                perror("Write failed");
+                exit(1);
+            }
+
+            // Close the client socket
+            close(client_fd);
+            continue;
+
+        }
+
+        // Reverse the hash, update the hash table, and send the value to the client
+        if (reverseHashUpdateHashTableAndSendValueToClient(&client_fd, &req, &resp, hashTable) != 0) {
             perror("Error processing request");
             continue;
         }
+
     }
     printf("Thread  threadProcessRequestsHandler is shutting down gracefully...\n");
     return NULL;
 }
+
+
+// function that searches the hash table for the key and sends the value to the client if the key is found. The function returns 0 if the key is found and 1 if the key is not found.
+int searchHashTableAndSendValueToClient(int *client_fd, request_packet *req, response_packet *resp, HashTable *hashTable) {
+    uint64_t value;
+
+    // Search hash table for the key
+    if (search(hashTable, req->hash, &value) == 0) {  
+        // Convert to network byte order
+         resp->answer = htobe64(value);
+
+        // Send the response back to the client
+        if (write(*client_fd, resp, RESP_SIZE) != RESP_SIZE) {
+            perror("Write failed");
+            exit(1);
+        }
+
+        // Close the client socket
+        close(*client_fd);
+        return 0;
+    }
+    else {
+        // Key not found
+        return 1;
+    }
+}
+
+
+// function that reverses the hash, updates the hash table, and sends the value to the client. 
+int reverseHashUpdateHashTableAndSendValueToClient(int *client_fd, request_packet *req, response_packet *resp, HashTable *hashTable) {
+    uint64_t answer = 0; // Answer to the reverse hash problem
+    
+    // Convert to host byte order
+    req->start = be64toh(req->start);
+    req->end = be64toh(req->end);
+
+    // new reverse hash function
+    if (reverseHash(req->hash, &req->start, &req->end, &answer)!=0) {
+        perror("Reverse hash not found. Sending 0 to client.");
+    }
+
+    // Insert the request and the answer into the hash table
+    insert(hashTable, req->hash, answer);
+    
+    // Convert to network byte order
+    resp->answer = htobe64(answer);
+
+    // Send the response back to the client
+    if (write(*client_fd, resp, RESP_SIZE) != RESP_SIZE) {
+        perror("Write failed");
+        exit(1);
+    }
+    
+    // Close the client socket
+    close(*client_fd);
+    return 0;   
+}
+
 
 // Signal handler for Ctrl+C
 void signal_handler(int signum) {

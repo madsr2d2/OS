@@ -1,6 +1,8 @@
 #include "extended_server_utils.h"
 
 atomic_bool terminate_flag = false; 
+HashTable *hashTable; // Global hash table
+
 int server_fd;
 
 int main(int argc, char *argv[]) {
@@ -14,8 +16,10 @@ int main(int argc, char *argv[]) {
     int port = atoi(argv[1]);                       // Port number to use
     FIFOQueue queue;                                // FIFO queue
     initQueue(&queue);                              // Initialize queue
+    hashTable = createHashTable();                  // Create hash table
     pthread_t thread1, thread2;                     // Thread handles
     acceptConnectionsArgs args = {&queue, port};    // Arguments for the acceptConnections thread
+    processRequestsArgs args2 = {&queue, hashTable};// Arguments for the processRequests thread
 
     // Register signal handler for SIGINT
     if (signal(SIGINT, signal_handler) == SIG_ERR) {
@@ -30,7 +34,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Create thread for processing requests
-    if (pthread_create(&thread2, NULL, threadProcessRequestsHandler, &queue)) {
+    if (pthread_create(&thread2, NULL, threadProcessRequests_cashing_Handler, &args2)) {
         perror("Error creating thread.");
         return 1;
     }

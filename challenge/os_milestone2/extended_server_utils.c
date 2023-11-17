@@ -111,6 +111,7 @@ int readRequestFromClient(int client_fd, request_packet *req) {
 void* threadProcessRequestsHandler(void* arg) {
     request_packet req;             // Request packet
     response_packet resp;           // Response packet
+    
 
     while (!terminate_flag) {
         int client_fd = dequeue((FIFOQueue *)arg);  // Pass the queue's address to the dequeue function

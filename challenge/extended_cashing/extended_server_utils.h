@@ -16,6 +16,7 @@
 #include <sys/socket.h>     // Necessary for socket, bind, listen, accept, etc.
 #include <netinet/in.h>     // Necessary for sockaddr_in, htons, etc.
 #include "fifo.h"           // Include the fifo header
+#include "hashTable.h"      // Include the hash table header
 
 #define QUEUE_SIZE 1000      // Number of pending connections in the connection queue
 #define REQ_SIZE 49         // Size of the request packet
@@ -45,13 +46,21 @@ typedef struct {
     int port;
 } acceptConnectionsArgs;
 
+// Arguments for the processRequests thread
+typedef struct {
+    FIFOQueue *queue;
+    HashTable *hashTable;
+} processRequestsArgs;
+
+
 // Function prototypes
 int createServerTcpSocketAndListen(int port, struct sockaddr_in *address);
 int reverseHash(uint8_t target_hash[32], uint64_t *start, uint64_t *end, uint64_t *answer);
 int reverseHashAndSendValueToClient(int *client_fd, request_packet *req, response_packet *resp);
+int reverseHashUpdateHashTableAndSendValueToClient(int *client_fd, request_packet *req, response_packet *resp, HashTable *hashTable);
 int readRequestFromClient(int client_fd, request_packet *req);
 void* threadAcceptConnectionsHandler(void* arg);
-void* threadProcessRequestsHandler(void* arg);
+void* threadProcessRequests_cashing_Handler(void* arg);
 void signal_handler(int signum);
 
 #endif

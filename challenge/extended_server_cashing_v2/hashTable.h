@@ -6,22 +6,7 @@
 #include <stdlib.h>     // Necessary for exit
 #include <string.h>     // Necessary for memcpy
 #include <pthread.h>    // Necessary for pthread_mutex_t
-
-#define HASH_TABLE_SIZE 4096 // This value should be assigned according to the available memory
-#define KEY_SIZE 32         // Size of the key in bytes
-
-// Node structure
-typedef struct Node {
-    uint8_t key[KEY_SIZE];
-    uint64_t value;
-    struct Node *next;
-} Node;
-
-// Hash table structure
-typedef struct HashTable {
-    Node *table[HASH_TABLE_SIZE];
-    pthread_mutex_t mutexes[HASH_TABLE_SIZE];  // An array of mutexes for each bucket
-} HashTable;
+#include "types.h"      
 
 // Function prototypes
 HashTable* createHashTable(void);

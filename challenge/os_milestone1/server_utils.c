@@ -129,5 +129,4 @@ void handle_sigint(int sig) {
     freeHashTable(hashTable);
     printf("Hash table freed.\n");
     printf("Exiting gracefully...\n");
-    exit(0);
 }

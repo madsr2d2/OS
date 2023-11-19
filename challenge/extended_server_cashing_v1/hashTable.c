@@ -1,39 +1,26 @@
-
 #include "hashTable.h"
 
-// Our own simple hash function
+// Hash function
 unsigned int hash(const uint8_t *key) {
     unsigned int hash = 0;
-   
-    for (int i = 0; i < KEY_SIZE; ++i) hash += key[i];  // Simply adds up the values of each byte in the key
-   
-    return hash % HASH_TABLE_SIZE;  // Uses modulo to limit the hash values to the range of 0 to HASH_TABLE_SIZE - 1
+    
+    for (int i = 0; i < KEY_SIZE; ++i) hash += key[i]; // Add all the bytes of the key
+    
+    return hash & (HASH_TABLE_SIZE - 1); // Return the hash value
 }
 
-// Print key
-void printKey(const uint8_t *key, size_t size) {
-    for(size_t i = 0; i < size; ++i) printf("%02x", key[i]);
-   
-    printf("\n");
-}
 
 // Create a new hash table 
 HashTable* createHashTable() {
     HashTable *newTable = (HashTable*)calloc(1, sizeof(HashTable));
    
-    if (!newTable) {
-        printf("Memory error\n");
-        return NULL;
-    }
+    if (!newTable) return NULL; // Handle case when calloc fails
 
-    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) 
         if (pthread_mutex_init(&newTable->mutexes[i], NULL) != 0) {
-            printf("Mutex init failed\n");
-            // Handle mutex initialization failure, e.g., by freeing already initialized mutexes and the table
-            // Do this....
+            free(newTable); // Free the hash table if mutex initialization fails
             return NULL;
         }
-    }
    
     return newTable;
 }
@@ -43,10 +30,11 @@ Node* createNode(const uint8_t *key, uint64_t value) {
     Node *newNode = (Node*)calloc(1,sizeof(Node));
    
     if (!newNode) {
-        printf("Memory error\n");
-        return NULL;
+        perror("Node creation failed");
+        return NULL; // Handle case when newNode creation fails
     }
    
+    // Copy the key and value into the new node
     memcpy(newNode->key, key, KEY_SIZE);
     newNode->value = value;
    
@@ -55,19 +43,18 @@ Node* createNode(const uint8_t *key, uint64_t value) {
 
 // Insert a new node into the hash table
 void insert(HashTable *hashTable, const uint8_t *key, uint64_t value) {
-    unsigned int index = hash(key);
-    Node *newNode = createNode(key, value);
+    unsigned int index = hash(key); // Get the index of the bucket
 
-    if (!newNode) return;  // Handle case when newNode creation fails
+    Node *newNode = createNode(key, value); // Create a new node
 
     pthread_mutex_lock(&hashTable->mutexes[index]);  // Lock the mutex for the bucket
 
-    if (!hashTable->table[index]) {
-        hashTable->table[index] = newNode;
-    } else {
+    // Insert the new node into the bucket
+    if (!hashTable->table[index]) hashTable->table[index] = newNode;
+    else {
         Node *current = hashTable->table[index];    
         while (current->next) current = current->next;
-        
+
         current->next = newNode;
     }
 
@@ -80,7 +67,7 @@ int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
     
     Node *current = hashTable->table[index];
     
-    while (current) {
+    while (current) { // Search for the key in the bucket
         if (memcmp(current->key, key, KEY_SIZE) == 0) {
             *value = current->value;
             return 0;  // 0 indicates success
@@ -95,7 +82,11 @@ int search(HashTable *hashTable, const uint8_t *key, uint64_t *value) {
 void freeHashTable(HashTable *hashTable) {
     for (int i = 0; i < HASH_TABLE_SIZE; i++) {
         Node *current = hashTable->table[i];
-       
+
+        // destroy the mutex
+        pthread_mutex_destroy(&hashTable->mutexes[i]);
+
+        // Free the linked list
         while (current) {
             Node *temp = current;
             current = current->next;
@@ -103,6 +94,6 @@ void freeHashTable(HashTable *hashTable) {
         }
     }
 
-    free(hashTable);
+    free(hashTable);   
 }
 

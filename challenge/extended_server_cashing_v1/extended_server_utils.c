@@ -1,13 +1,21 @@
 #include "extended_server_utils.h"
 
-
 // function that creates a TCP socket and starts listening. The function returns a file descriptor for the TCP socket
 int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
     
     // Create server socket
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Socket failed.");
-        exit(EXIT_FAILURE);
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1) {
+        perror("Socket creation failed");
+        return -1;
+    }
+
+    // Set the SO_REUSEADDR option
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt SO_REUSEADDR failed");
+        close(server_fd);
+        return -1;
     }
 
     // Configure server address
@@ -17,17 +25,19 @@ int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
 
     // Bind server socket to the address
     if (bind(server_fd, (struct sockaddr *)address, sizeof(*address)) < 0) {
-        perror("Bind failed.");
-        exit(EXIT_FAILURE);
+        perror("Bind failed");
+        close(server_fd);
+        return -1;
     }
 
     // Start listening
     if (listen(server_fd, QUEUE_SIZE) < 0) {
         perror("Listen failed");
-        exit(EXIT_FAILURE);
+        close(server_fd);
+        return -1;
     }
 
-    printf("Server socket listening on port %d.\n", port);
+    fcntl(server_fd, F_SETFL, O_NONBLOCK); // Make the server socket non-blocking
 
     return server_fd;
 }
@@ -74,22 +84,24 @@ int reverseHashAndSendValueToClient(int *client_fd, request_packet *req, respons
     return 0;   
 }
 
-// thread handler for accepting connections and adding them to the queue
-void* threadAcceptConnectionsHandler(void* args) {
+// Thread handler for accepting connections and adding them to the queue
+void* handleConnectionAcceptanceThread(void* args) {
     
-    struct sockaddr_in address;
+    struct sockaddr_in address; // Server address
 
     int server_fd = createServerTcpSocketAndListen(((acceptConnectionsArgs*)args)->port, &address); // Create server socket and start listening
 
     while (!terminate_flag) {
-        // Accept a new connection and add it to the queue
-        enqueue(((acceptConnectionsArgs*)args)->queue, accept(server_fd, (struct sockaddr*)&address, &(socklen_t){sizeof(address)}));
+        int client_fd = accept(server_fd, (struct sockaddr*)&address, &(socklen_t){sizeof(address)});
+        if (client_fd == -1) continue;
+        else enqueue(((acceptConnectionsArgs*)args)->queue, client_fd);
     }
-    
-    printf("Thread threadAcceptConnectionsHandler is shutting down gracefully...\n");
 
-    return NULL;
+    printf("Thread handleConnectionAcceptanceThread is shutting down gracefully...\n");
+    close(server_fd);
+    return NULL; 
 }
+
 
 // function that reads the request from the client in a loop until it has read REQ_SIZE bytes of data.
 int readRequestFromClient(int client_fd, request_packet *req) {
@@ -98,12 +110,8 @@ int readRequestFromClient(int client_fd, request_packet *req) {
     while (bytesRead < REQ_SIZE && !terminate_flag) {
         int n = recv(client_fd, ((char*)req) + bytesRead, REQ_SIZE - bytesRead,0);
         
-        if (n == -1) {
-            perror("Error in reading");
-            return 1;
-        }
-
-        if (n == 0) return 0; // Socket closed
+        if (n == -1) return 1; // Error in recv
+        if (n == 0) return 2; // Socket closed before reading all the data
         
         bytesRead += n;
     }
@@ -111,15 +119,18 @@ int readRequestFromClient(int client_fd, request_packet *req) {
     return 0;
 }
 
+
+
 // thread handler for processing requests
-void* threadProcessRequests_cashing_Handler(void* arg) {
+void* handleRequestProcessingThread(void* arg) {
     request_packet req;             // Request packet
     response_packet resp;           // Response packet
     FIFOQueue *queue = ((processRequestsArgs *)arg)->queue;      // FIFO queue
     HashTable *hashTable = ((processRequestsArgs *)arg)->hashTable; // Hash table
 
+    int client_fd;
     while (!terminate_flag) {
-        int client_fd = dequeue(queue);  // Pass the queue's address to the dequeue function
+        client_fd = dequeue(queue);  // Pass the queue's address to the dequeue function
 
         if (client_fd == -1) { // Continue if queue is empty
             continue;
@@ -131,22 +142,11 @@ void* threadProcessRequests_cashing_Handler(void* arg) {
             continue;
         }
 
-        // search for the key in hash table int search(HashTable *hashTable, const uint8_t *key, uint64_t *value);
-        if (!search(hashTable, req.hash,&(resp.answer))) {
-            // Convert to network byte order
-            resp.answer = htobe64(resp.answer);
 
-            // Send the response back to the client
-            if (send(client_fd, &resp, RESP_SIZE,0) != RESP_SIZE) {
-                perror("Write failed");
-                exit(1);
-            }
-
-            // Close the client socket
-            close(client_fd);
-            continue;
-
+        if (searchHashTableAndSendValueToClient(&client_fd, &req, &resp, hashTable) == 0) { 
+            continue; // Continue if the key is found
         }
+
 
         // Reverse the hash, update the hash table, and send the value to the client
         if (reverseHashUpdateHashTableAndSendValueToClient(&client_fd, &req, &resp, hashTable) != 0) {
@@ -155,7 +155,9 @@ void* threadProcessRequests_cashing_Handler(void* arg) {
         }
 
     }
-    printf("Thread  threadProcessRequestsHandler is shutting down gracefully...\n");
+
+    close(client_fd);
+    printf("Thread handleRequestProcessingThread is shutting down gracefully...\n");
     return NULL;
 }
 
@@ -170,9 +172,9 @@ int searchHashTableAndSendValueToClient(int *client_fd, request_packet *req, res
          resp->answer = htobe64(value);
 
         // Send the response back to the client
-        if (write(*client_fd, resp, RESP_SIZE) != RESP_SIZE) {
+        if (send(*client_fd, resp, RESP_SIZE, 0) != RESP_SIZE) {
             perror("Write failed");
-            exit(1);
+            return 2;
         }
 
         // Close the client socket
@@ -206,9 +208,9 @@ int reverseHashUpdateHashTableAndSendValueToClient(int *client_fd, request_packe
     resp->answer = htobe64(answer);
 
     // Send the response back to the client
-    if (write(*client_fd, resp, RESP_SIZE) != RESP_SIZE) {
+    if (send(*client_fd, resp, RESP_SIZE,0) != RESP_SIZE) {
         perror("Write failed");
-        exit(1);
+        return 1;
     }
     
     // Close the client socket
@@ -220,9 +222,7 @@ int reverseHashUpdateHashTableAndSendValueToClient(int *client_fd, request_packe
 // Signal handler for Ctrl+C
 void signal_handler(int signum) {
     if (signum == SIGINT) {
-        terminate_flag = true;
-        shutdown(server_fd, SHUT_RDWR);
-        close(server_fd);
+        terminate_flag = 1;
     }
 }
 

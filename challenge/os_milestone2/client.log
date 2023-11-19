@@ -2563,3 +2563,76 @@ Priority enabled - lambda: 1.50
 
 Prio stats: 394 85 17 3 1 0 0 0 0 0 0 0 0 0 0 0 
 Results: 100.00 195866154
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 500
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 500
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 500
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 500
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 500
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+**********************************
+DTU - OS Challenge - Client v0.20
+**********************************
+Total requests: 10
+Start: Random
+Difficulty: 30000000
+Repetition probability (%): 20
+Request delay (us): 600000
+Priority enabled - lambda: 1.50
+
+[1 5323113048839211569 5323113048839211569 1] 1185814
+[1 6061301652778360708 6061301652778360708 1] 1903117
+[1 6551056528233317404 6551056528233317404 1] 3031786
+[1 5199371706524493251 5199371706524493251 1] 2833222
+[1 3659813617944922327 3659813617944922327 1] 3171677
+[1 5323113048839211569 5323113048839211569 1] 3797255
+[1 6551056528233317404 6551056528233317404 1] 4957602
+[1 4306388032135015083 4306388032135015083 1] 5536187
+[1 3582342302972989278 3582342302972989278 2] 5903130
+[1 5152867666612939994 5152867666612939994 1] 5431516
+
+Prio stats: 9 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 
+Results: 100.00 4365443

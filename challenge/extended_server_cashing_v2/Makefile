@@ -8,13 +8,13 @@ CFLAGS = -Wall -g
 LDFLAGS = -lcrypto -pthread 
 
 # Source files
-SOURCES = extended_server.c fifo.c extended_server_utils.c hashTable.c
+SOURCES = extended_server_cashing_v2.c fifo.c extended_server_utils.c hashTable.c
 
 # Object files
 OBJECTS = $(SOURCES:.c=.o)
 
 # Executable output name
-EXECUTABLE = extended_server
+EXECUTABLE = extended_server_cashing_v2
 
 all: $(SOURCES) $(EXECUTABLE)
 

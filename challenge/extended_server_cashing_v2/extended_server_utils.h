@@ -17,7 +17,6 @@
 #include "types.h"
 #include "fifo.h"           // Assuming this contains the definition of FIFOQueue
 #include "hashTable.h"      // Assuming this contains the definition of HashTable
-         
 
 extern atomic_bool terminate_flag;  // Terminate flag
 

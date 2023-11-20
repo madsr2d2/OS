@@ -139,8 +139,6 @@ int readRequestFromClient(int client_fd, request_packet *req) {
     return 0;
 }
 
-
-
 // thread handler for processing requests
 void* handleRequestProcessingThread(void* arg) {
     request_packet req;             // Request packet

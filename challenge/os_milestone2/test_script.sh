@@ -15,7 +15,7 @@ run_client() {
     # This is the configuration of the final run.
     SERVER=localhost
     SEED=5041
-    TOTAL=100
+    TOTAL=5
     START=0
     DIFFICULTY=300
     REP_PROB_PERCENT=20

@@ -1,6 +1,6 @@
 #include "extended_server_utils.h"
 
-atomic_bool terminate_flag = false; 
+atomic_bool terminate_flag = 0; 
 int server_fd;
 
 int main(int argc, char *argv[]) {

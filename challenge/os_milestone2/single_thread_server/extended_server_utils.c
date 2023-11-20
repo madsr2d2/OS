@@ -3,30 +3,42 @@
 // function that creates a TCP socket and starts listening. The function returns a file descriptor for the TCP socket
 int createServerTcpSocketAndListen(int port, struct sockaddr_in *address) {
     
-    // Create server socket
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
-        perror("Socket failed.");
-        exit(EXIT_FAILURE);
+    // Create a TCP server socket
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd == -1) {
+        perror("Socket creation failed");
+        return -1;
     }
 
-    // Configure server address
+    // Set the socket option SO_REUSEADDR to reuse the port if it's in TIME_WAIT state
+    int opt = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+        perror("setsockopt SO_REUSEADDR failed");
+        close(server_fd);
+        return -1;
+    }
+
+    // Set up the server address structure
     address->sin_family = AF_INET;
-    address->sin_addr.s_addr = INADDR_ANY;
-    address->sin_port = htons(port);
+    address->sin_addr.s_addr = INADDR_ANY;  // Accept connections to any IP address
+    address->sin_port = htons(port);  // Convert port number to network byte order
 
-    // Bind server socket to the address
+    // Bind the server socket to the specified address and port
     if (bind(server_fd, (struct sockaddr *)address, sizeof(*address)) < 0) {
-        perror("Bind failed.");
-        exit(EXIT_FAILURE);
+        perror("Bind failed");
+        close(server_fd);
+        return -1;
     }
 
-    // Start listening
+    // Start listening for incoming connections
     if (listen(server_fd, QUEUE_SIZE) < 0) {
         perror("Listen failed");
-        exit(EXIT_FAILURE);
+        close(server_fd);
+        return -1;
     }
 
-    printf("Server socket listening on port %d.\n", port);
+    // Set the server socket to non-blocking mode
+    fcntl(server_fd, F_SETFL, O_NONBLOCK);
 
     return server_fd;
 }

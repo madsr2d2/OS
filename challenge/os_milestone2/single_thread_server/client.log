@@ -1,0 +1,42 @@
+Running client with DIFFICULTY: 100
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 100
+
+----------------------------------------
+Running client with DIFFICULTY: 200
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 200
+
+----------------------------------------
+Running client with DIFFICULTY: 400
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 400
+
+----------------------------------------
+Running client with DIFFICULTY: 800
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 800
+
+----------------------------------------
+Running client with DIFFICULTY: 1600
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 1600
+
+----------------------------------------
+Running client with DIFFICULTY: 30000000
+
+Standard Error: NA
+Mean Waiting Time: NA
+Statistics for REP_PROB_PERCENT: 30000000
+
+----------------------------------------

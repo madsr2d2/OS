@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include "types.h"
 
-
 // Function prototypes
 void initQueue(FIFOQueue *queue);
 void enqueue(FIFOQueue *queue, request_packet req);

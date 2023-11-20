@@ -1,20 +1,20 @@
 #ifndef SERVER_UTILS_H
 #define SERVER_UTILS_H
 
-#include <stdint.h>         // Necessary for uint8_t, uint16_t, etc.
-#include <arpa/inet.h>      // Necessary for socket operations like htons, accept, etc.
-#include <openssl/sha.h>    // Necessary for SHA256
-#include <string.h>         // Necessary for memcpy
-#include <errno.h>          // Necessary for errno
-#include <stdbool.h>        // Necessary for bool, true, false
-#include <stdatomic.h>      // Necessary for atomic_bool
-#include <signal.h>         // Necessary for signal handling
-#include <stdlib.h>         // Necessary for exit and atoi.
-#include <stdio.h>          // Necessary for fprintf, printf, etc.
-#include <pthread.h>        // Necessary for pthread_create, pthread_join, etc.
-#include <unistd.h>         // Necessary for read, write, and close.
-#include <sys/socket.h>     // Necessary for socket, bind, listen, accept, etc.
-#include <netinet/in.h>     // Necessary for sockaddr_in, htons, etc.
+// Standard and network headers for socket programming and system operations.
+#include <sys/socket.h>  // Socket-related functions: socket(), bind(), listen(), accept(), setsockopt().
+#include <netinet/in.h>  // Structures and functions for internet domain addresses, e.g., sockaddr_in, htons().
+#include <arpa/inet.h>   // Functions for manipulating numeric IP addresses.
+#include <unistd.h>      // POSIX operating system API: close().
+#include <fcntl.h>       // File control options: fcntl().
+#include <signal.h>      // Signal handling utilities, e.g., signal().
+#include <stdio.h>       // Standard input/output library for functions like perror(), printf().
+#include <stdlib.h>      // Standard library functions: exit(), atoi().
+#include <pthread.h>     // Thread functions: pthread_create(), pthread_join(), etc.
+#include <stdatomic.h>   // Atomic data types for thread synchronization, e.g., atomic_bool.
+#include <openssl/sha.h> // OpenSSL's SHA256 hash function.
+#include <stdint.h>      // Standard integer types: uint8_t, uint64_t, etc.
+#include <string.h>      // String handling functions: memcmp(), memcpy().
 #include "fifo.h"           // Include the fifo header
 
 #define QUEUE_SIZE 1000      // Number of pending connections in the connection queue
